@@ -7,13 +7,10 @@ namespace VirtualHidClient
 {
     class Program
     {
-        // Driver tarafında tanımladığınız IOCTL koduyla eşleşmeli
+
         private const int IOCTL_VHID_INJECT_REPORT =
             (0x22 << 16) | (0x801 << 2) | (0 << 14);
-        // Yukarıdaki hesap, CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_ANY_ACCESS)
-        // makrosunun eşdeğeridir.
 
-        // WinAPI fonksiyonları
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern SafeFileHandle CreateFile(
             string lpFileName,
@@ -37,14 +34,11 @@ namespace VirtualHidClient
             IntPtr lpOverlapped
         );
 
-        // Driver'ın kaydettiği device interface veya sembolik link
-        // Gerçekte SetupAPI üzerinden alınan path'i kullanmanız önerilir.
         private const string DEVICE_PATH = @"\\.\HID_Virtual_Keyboard_Mouse";
 
         static void Main(string[] args)
         {
-            // 0xC0000000 => GENERIC_READ | GENERIC_WRITE
-            // 3 => OPEN_EXISTING
+
             using (SafeFileHandle handle = CreateFile(
                 DEVICE_PATH,
                 0xC0000000,
@@ -60,9 +54,6 @@ namespace VirtualHidClient
                     return;
                 }
 
-                // Örnek HID raporu (sanal klavye ya da fare formatına göre doldurmanız lazım)
-                // Ör: Klavye raporu 8 byte olabilir (modifier, reserved, keycodes...)
-                // Ör: Mouse raporu 4-5 byte (buttons, X, Y, wheel...)
                 byte[] inputReport = new byte[] 
                 {
                     0x00, // Modifier (ör. Ctrl, Shift vs. yok)
@@ -75,7 +66,7 @@ namespace VirtualHidClient
                     0x00
                 };
 
-                // Driver'a IOCTL ile rapor gönder
+
                 bool success = DeviceIoControl(
                     handle,
                     IOCTL_VHID_INJECT_REPORT,
